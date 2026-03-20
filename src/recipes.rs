@@ -282,25 +282,13 @@ impl Default for TerrainCoverInputs {
     }
 }
 
-#[derive(Clone, Copy, Debug, PartialEq)]
+#[derive(Clone, Copy, Debug, Default, PartialEq)]
 pub struct TerrainMaterialInputs {
     pub surface: TerrainSurfaceInputs,
     pub regolith: TerrainRegolithInputs,
     pub bedrock: TerrainBedrockInputs,
     pub cover: TerrainCoverInputs,
     pub rarity_context: MaterialRarityContext,
-}
-
-impl Default for TerrainMaterialInputs {
-    fn default() -> Self {
-        Self {
-            surface: TerrainSurfaceInputs::default(),
-            regolith: TerrainRegolithInputs::default(),
-            bedrock: TerrainBedrockInputs::default(),
-            cover: TerrainCoverInputs::default(),
-            rarity_context: MaterialRarityContext::default(),
-        }
-    }
 }
 
 #[derive(Clone, Copy, Debug, PartialEq)]
@@ -1129,10 +1117,12 @@ mod tests {
 
     #[test]
     fn terrain_snow_cover_derives_ice_cover_recipe() {
-        let mut inputs = TerrainMaterialInputs::default();
-        inputs.cover = TerrainCoverInputs {
-            class: TerrainCoverClass::Snow,
-            ..TerrainCoverInputs::default()
+        let inputs = TerrainMaterialInputs {
+            cover: TerrainCoverInputs {
+                class: TerrainCoverClass::Snow,
+                ..TerrainCoverInputs::default()
+            },
+            ..TerrainMaterialInputs::default()
         };
         let column = derive_terrain_material_column_recipe(inputs);
         let cover = column.cover.expect("snow cover recipe");
