@@ -656,6 +656,7 @@ fn representative_color_for_variant(variant: MaterialVariant) -> MaterialReprese
         MaterialVariant::Stone => MaterialRepresentativeColor::new(0.56, 0.54, 0.56),
         MaterialVariant::Metal => MaterialRepresentativeColor::new(0.62, 0.64, 0.68),
         MaterialVariant::Wood => MaterialRepresentativeColor::new(0.56, 0.38, 0.22),
+        MaterialVariant::Foliage => MaterialRepresentativeColor::new(0.26, 0.44, 0.16),
         MaterialVariant::Glass => MaterialRepresentativeColor::new(0.72, 0.80, 0.84),
         MaterialVariant::Ice => MaterialRepresentativeColor::new(0.78, 0.88, 0.94),
         MaterialVariant::Ceramic => MaterialRepresentativeColor::new(0.70, 0.46, 0.32),
@@ -1216,6 +1217,23 @@ mod tests {
         );
         assert_eq!(recipe.class, MaterialClass::Elemental);
         assert_eq!(recipe.variant, MaterialVariant::Ceramic);
+    }
+
+    #[test]
+    fn derive_foliage_recipe_uses_simple_opaque_elemental_path() {
+        let recipe = derive_material_recipe(
+            MaterialVariant::Foliage,
+            MaterialSoilParameters::default(),
+            MaterialRarityContext::default(),
+        );
+        assert_eq!(recipe.class, MaterialClass::Elemental);
+        assert_eq!(recipe.variant, MaterialVariant::Foliage);
+        assert_eq!(
+            recipe.orientation,
+            MaterialVariant::Foliage.orientation_axis()
+        );
+        assert_eq!(recipe.optical_class, MaterialOpticalClass::Opaque);
+        assert_eq!(recipe.parameters, MaterialRecipeParameters::None);
     }
 
     #[test]

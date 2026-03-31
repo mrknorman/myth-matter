@@ -46,6 +46,9 @@ pub fn material_effective_rarity_bits_for_state(viewer_state: MaterialDerivation
         MaterialVariant::Metal => rarity_context.depth * 4.2,
         MaterialVariant::Stone => rarity_context.depth * 3.6,
         MaterialVariant::Wood => rarity_context.northness() * 4.0,
+        MaterialVariant::Foliage => {
+            rarity_context.center_proximity * 3.2 + rarity_context.northness() * 2.0
+        }
         MaterialVariant::Glass => rarity_context.craft_quality * 2.0,
         MaterialVariant::Ice => {
             let snowiness = f64::from(viewer_state.ice_params.snowiness());
@@ -88,6 +91,7 @@ pub fn material_rarity_budget_for_state(viewer_state: MaterialDerivationState) -
         MaterialVariant::Metal => 14.0,
         MaterialVariant::Stone => 13.0,
         MaterialVariant::Wood => 12.0,
+        MaterialVariant::Foliage => 11.5,
         MaterialVariant::Glass => 10.5,
         MaterialVariant::Ice => 10.0 - f64::from(viewer_state.ice_params.snowiness()) * 0.9,
         MaterialVariant::Ceramic => 13.0,
@@ -105,6 +109,7 @@ fn material_rarity_budget(variant: MaterialVariant, effective_rarity_bits: f64) 
         MaterialVariant::Metal => 14.0,
         MaterialVariant::Stone => 13.0,
         MaterialVariant::Wood => 12.0,
+        MaterialVariant::Foliage => 11.5,
         MaterialVariant::Glass => 10.5,
         MaterialVariant::Ice => 10.0,
         MaterialVariant::Ceramic => 13.0,
@@ -217,6 +222,24 @@ pub(crate) fn material_aspect_weights_for_state(
                 0.65 + north * 0.40,
             );
             material_add_weight(&mut weights, MaterialHiddenAspect::DensityBias, 0.15);
+        }
+        MaterialVariant::Foliage => {
+            material_add_weight(
+                &mut weights,
+                MaterialHiddenAspect::Elasticity,
+                0.92 + north * 0.42 + rarity_context.center_proximity * 0.18,
+            );
+            material_add_weight(
+                &mut weights,
+                MaterialHiddenAspect::Vitality,
+                1.02 + rarity_context.center_proximity * 0.78 + north * 0.18,
+            );
+            material_add_weight(
+                &mut weights,
+                MaterialHiddenAspect::Fertility,
+                0.84 + rarity_context.center_proximity * 0.62 + south * 0.14,
+            );
+            material_add_weight(&mut weights, MaterialHiddenAspect::DensityBias, 0.10);
         }
         MaterialVariant::Glass => {
             material_add_weight(

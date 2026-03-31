@@ -172,6 +172,7 @@ pub enum MaterialVariant {
     Metal,
     #[default]
     Wood,
+    Foliage,
     Glass,
     Ice,
     Ceramic,
@@ -180,10 +181,11 @@ pub enum MaterialVariant {
 }
 
 impl MaterialVariant {
-    pub const ALL: [Self; 8] = [
+    pub const ALL: [Self; 9] = [
         Self::Stone,
         Self::Metal,
         Self::Wood,
+        Self::Foliage,
         Self::Glass,
         Self::Ice,
         Self::Ceramic,
@@ -191,10 +193,11 @@ impl MaterialVariant {
         Self::Soil,
     ];
 
-    pub const ELEMENTAL: [Self; 7] = [
+    pub const ELEMENTAL: [Self; 8] = [
         Self::Stone,
         Self::Metal,
         Self::Wood,
+        Self::Foliage,
         Self::Glass,
         Self::Ice,
         Self::Ceramic,
@@ -208,6 +211,7 @@ impl MaterialVariant {
             Self::Stone => "Stone",
             Self::Metal => "Metal",
             Self::Wood => "Wood",
+            Self::Foliage => "Foliage",
             Self::Glass => "Glass",
             Self::Ice => "Ice",
             Self::Ceramic => "Ceramic",
@@ -222,6 +226,7 @@ impl MaterialVariant {
             Self::Stone
             | Self::Metal
             | Self::Wood
+            | Self::Foliage
             | Self::Glass
             | Self::Ice
             | Self::Ceramic
@@ -234,6 +239,7 @@ impl MaterialVariant {
             Self::Stone => "Granite Vein",
             Self::Metal => "Weathered Iron",
             Self::Wood => "Pine End-Grain",
+            Self::Foliage => "Broadleaf Canopy",
             Self::Glass => "Tinted Float Glass",
             Self::Ice => "Blue Glacial Ice",
             Self::Ceramic => "Speckled Terracotta",
@@ -247,6 +253,7 @@ impl MaterialVariant {
             Self::Stone => "material-stone",
             Self::Metal => "material-metal",
             Self::Wood => "material-wood",
+            Self::Foliage => "material-foliage",
             Self::Glass => "material-glass",
             Self::Ice => "material-ice",
             Self::Ceramic => "material-ceramic",
@@ -260,6 +267,7 @@ impl MaterialVariant {
             Self::Stone => MaterialOrientationAxis::Y,
             Self::Metal => MaterialOrientationAxis::Z,
             Self::Wood => MaterialOrientationAxis::Y,
+            Self::Foliage => MaterialOrientationAxis::Y,
             Self::Glass => MaterialOrientationAxis::Y,
             Self::Ice => MaterialOrientationAxis::Y,
             Self::Ceramic => MaterialOrientationAxis::Y,
@@ -278,6 +286,7 @@ impl MaterialVariant {
             Self::Crystal => 6,
             Self::Glass => 7,
             Self::Soil => 8,
+            Self::Foliage => 9,
         }
     }
 
@@ -328,6 +337,22 @@ impl MaterialVariant {
                 50,
                 340,
                 520,
+                6,
+                MaterialMatterState::Solid,
+            ),
+            Self::Foliage => MaterialCommonProperties::new(
+                260,
+                120,
+                180,
+                240,
+                720,
+                560,
+                180,
+                360,
+                90,
+                30,
+                180,
+                760,
                 6,
                 MaterialMatterState::Solid,
             ),
