@@ -2,13 +2,14 @@ use crate::{
     MaterialIceParameters, MaterialRarityContext, MaterialRegolithOrigin,
     MaterialRegolithParameters, MaterialSoilElementBindings, MaterialSoilParameters,
     MaterialStoneGenesis, MaterialStoneLithology, MaterialStoneParameters, MaterialVariant,
-    material_derive_regolith_origin, material_derive_stone_lithology,
+    MaterialWaterParameters, material_derive_regolith_origin, material_derive_stone_lithology,
 };
 
 #[derive(Clone, Copy, Debug, PartialEq)]
 pub struct MaterialDerivationState {
     pub selected_variant: MaterialVariant,
     pub ice_params: MaterialIceParameters,
+    pub water_params: MaterialWaterParameters,
     pub selected_stone_genesis: MaterialStoneGenesis,
     pub stone_params: MaterialStoneParameters,
     pub regolith_params: MaterialRegolithParameters,
@@ -21,6 +22,7 @@ impl Default for MaterialDerivationState {
         Self {
             selected_variant: MaterialVariant::Wood,
             ice_params: MaterialIceParameters::default(),
+            water_params: MaterialWaterParameters::default(),
             selected_stone_genesis: MaterialStoneGenesis::default(),
             stone_params: MaterialStoneParameters::default(),
             regolith_params: MaterialRegolithParameters::default(),

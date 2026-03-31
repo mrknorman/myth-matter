@@ -2,8 +2,9 @@ use crate::{
     MaterialCommonProperties, MaterialDerivationState, MaterialElement, MaterialIceForm,
     MaterialIceParameters, MaterialMatterState, MaterialRarityContext, MaterialRegolithOrigin,
     MaterialRegolithParameters, MaterialSoilParameters, MaterialStoneGenesis,
-    MaterialStoneLithology, MaterialStoneParameters, MaterialVariant, material_absolute_property,
-    material_ice_anchor_weights, material_lerp_common_properties,
+    MaterialStoneLithology, MaterialStoneParameters, MaterialVariant, MaterialWaterParameters,
+    derive_water_base_common_properties, material_absolute_property, material_ice_anchor_weights,
+    material_lerp_common_properties,
 };
 
 use crate::rarity::{
@@ -182,6 +183,7 @@ pub fn derive_material_common_properties(
     derive_material_common_properties_for_state(MaterialDerivationState {
         selected_variant: variant,
         ice_params: MaterialIceParameters::default(),
+        water_params: MaterialWaterParameters::default(),
         selected_stone_genesis: MaterialStoneGenesis::default(),
         stone_params: MaterialStoneParameters::default(),
         regolith_params: MaterialRegolithParameters::default(),
@@ -206,6 +208,7 @@ pub fn derive_material_common_properties_for_state(
             viewer_state.derived_regolith_origin(),
         ),
         MaterialVariant::Ice => derive_ice_base_common_properties(viewer_state.ice_params),
+        MaterialVariant::Water => derive_water_base_common_properties(viewer_state.water_params),
         MaterialVariant::Ceramic => derive_ceramic_base_common_properties_with_origin(
             soil,
             rarity_context,

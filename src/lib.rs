@@ -8,6 +8,7 @@ pub mod soil;
 pub mod state;
 pub mod stone;
 pub mod taxonomy;
+pub mod water;
 
 pub use derivation::{
     derive_material_common_properties, derive_material_common_properties_for_state,
@@ -45,6 +46,10 @@ pub use stone::{
 };
 pub use taxonomy::{
     MaterialClass, MaterialElement, MaterialOrientationAxis, MaterialPreviewLod, MaterialVariant,
+};
+pub use water::{
+    MATERIAL_WATER_MAX_MAX_PATH_LENGTH_M, MATERIAL_WATER_MIN_MAX_PATH_LENGTH_M,
+    MaterialWaterParameter, MaterialWaterParameters, derive_water_base_common_properties,
 };
 
 pub const MATERIAL_SOIL_COMPOSITION_COMPONENT_COUNT: usize = 7;

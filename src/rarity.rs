@@ -2,7 +2,8 @@ use crate::{
     MaterialCommonProperties, MaterialDerivationState, MaterialIceParameters,
     MaterialRarityContext, MaterialRegolithOrigin, MaterialRegolithParameters,
     MaterialSoilParameters, MaterialStoneGenesis, MaterialStoneLithology, MaterialStoneParameters,
-    MaterialVariant, material_absolute_property, material_ice_anchor_weights,
+    MaterialVariant, MaterialWaterParameters, material_absolute_property,
+    material_ice_anchor_weights,
 };
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
@@ -54,6 +55,11 @@ pub fn material_effective_rarity_bits_for_state(viewer_state: MaterialDerivation
             let snowiness = f64::from(viewer_state.ice_params.snowiness());
             rarity_context.height * (3.8 - 0.5 * snowiness)
         }
+        MaterialVariant::Water => {
+            rarity_context.center_proximity * 2.0
+                + rarity_context.height * 1.6
+                + f64::from(viewer_state.water_params.purity()) * 1.2
+        }
         MaterialVariant::Ceramic => {
             material_ceramic_feedstock_score_with_origin(
                 viewer_state.soil_params,
@@ -78,6 +84,7 @@ pub fn material_effective_rarity_bits(
     material_effective_rarity_bits_for_state(MaterialDerivationState {
         selected_variant: variant,
         ice_params: MaterialIceParameters::default(),
+        water_params: MaterialWaterParameters::default(),
         selected_stone_genesis: MaterialStoneGenesis::default(),
         stone_params: MaterialStoneParameters::default(),
         regolith_params: MaterialRegolithParameters::default(),
@@ -94,6 +101,7 @@ pub fn material_rarity_budget_for_state(viewer_state: MaterialDerivationState) -
         MaterialVariant::Foliage => 11.5,
         MaterialVariant::Glass => 10.5,
         MaterialVariant::Ice => 10.0 - f64::from(viewer_state.ice_params.snowiness()) * 0.9,
+        MaterialVariant::Water => 10.8 + f64::from(viewer_state.water_params.salinity()) * 0.4,
         MaterialVariant::Ceramic => 13.0,
         MaterialVariant::Crystal => 12.5,
         MaterialVariant::Soil => 11.0,
@@ -112,6 +120,7 @@ fn material_rarity_budget(variant: MaterialVariant, effective_rarity_bits: f64) 
         MaterialVariant::Foliage => 11.5,
         MaterialVariant::Glass => 10.5,
         MaterialVariant::Ice => 10.0,
+        MaterialVariant::Water => 10.8,
         MaterialVariant::Ceramic => 13.0,
         MaterialVariant::Crystal => 12.5,
         MaterialVariant::Soil => 11.0,
@@ -283,6 +292,32 @@ pub(crate) fn material_aspect_weights_for_state(
                 0.10 + snowiness * 0.24 + air * 0.10,
             );
         }
+        MaterialVariant::Water => {
+            let purity = f64::from(viewer_state.water_params.purity());
+            let salinity = f64::from(viewer_state.water_params.salinity());
+            let sediment = f64::from(viewer_state.water_params.sediment());
+            let organic = f64::from(viewer_state.water_params.organic_tint());
+            material_add_weight(
+                &mut weights,
+                MaterialHiddenAspect::Purity,
+                0.80 + purity * 0.50 - sediment * 0.22 - organic * 0.18,
+            );
+            material_add_weight(
+                &mut weights,
+                MaterialHiddenAspect::Conductivity,
+                0.30 + salinity * 0.70 + sediment * 0.16,
+            );
+            material_add_weight(
+                &mut weights,
+                MaterialHiddenAspect::DensityBias,
+                0.18 + salinity * 0.25 + sediment * 0.18,
+            );
+            material_add_weight(
+                &mut weights,
+                MaterialHiddenAspect::Vitality,
+                0.10 + rarity_context.center_proximity * 0.18 - salinity * 0.08,
+            );
+        }
         MaterialVariant::Ceramic => {
             let feedstock = material_ceramic_feedstock_score_with_origin(
                 soil,
@@ -380,6 +415,7 @@ fn material_aspect_weights(
     material_aspect_weights_for_state(MaterialDerivationState {
         selected_variant: variant,
         ice_params: MaterialIceParameters::default(),
+        water_params: MaterialWaterParameters::default(),
         selected_stone_genesis: MaterialStoneGenesis::default(),
         stone_params: MaterialStoneParameters::default(),
         regolith_params: MaterialRegolithParameters::default(),

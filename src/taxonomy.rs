@@ -175,31 +175,34 @@ pub enum MaterialVariant {
     Foliage,
     Glass,
     Ice,
+    Water,
     Ceramic,
     Crystal,
     Soil,
 }
 
 impl MaterialVariant {
-    pub const ALL: [Self; 9] = [
+    pub const ALL: [Self; 10] = [
         Self::Stone,
         Self::Metal,
         Self::Wood,
         Self::Foliage,
         Self::Glass,
         Self::Ice,
+        Self::Water,
         Self::Ceramic,
         Self::Crystal,
         Self::Soil,
     ];
 
-    pub const ELEMENTAL: [Self; 8] = [
+    pub const ELEMENTAL: [Self; 9] = [
         Self::Stone,
         Self::Metal,
         Self::Wood,
         Self::Foliage,
         Self::Glass,
         Self::Ice,
+        Self::Water,
         Self::Ceramic,
         Self::Crystal,
     ];
@@ -214,6 +217,7 @@ impl MaterialVariant {
             Self::Foliage => "Foliage",
             Self::Glass => "Glass",
             Self::Ice => "Ice",
+            Self::Water => "Water",
             Self::Ceramic => "Ceramic",
             Self::Crystal => "Crystal",
             Self::Soil => "Soil",
@@ -229,6 +233,7 @@ impl MaterialVariant {
             | Self::Foliage
             | Self::Glass
             | Self::Ice
+            | Self::Water
             | Self::Ceramic
             | Self::Crystal => MaterialClass::Elemental,
         }
@@ -242,6 +247,7 @@ impl MaterialVariant {
             Self::Foliage => "Broadleaf Canopy",
             Self::Glass => "Tinted Float Glass",
             Self::Ice => "Blue Glacial Ice",
+            Self::Water => "Clear Freshwater",
             Self::Ceramic => "Speckled Terracotta",
             Self::Crystal => "Amethyst Banding",
             Self::Soil => "Rich Garden Soil",
@@ -256,6 +262,7 @@ impl MaterialVariant {
             Self::Foliage => "material-foliage",
             Self::Glass => "material-glass",
             Self::Ice => "material-ice",
+            Self::Water => "material-water",
             Self::Ceramic => "material-ceramic",
             Self::Crystal => "material-crystal",
             Self::Soil => "material-soil",
@@ -270,6 +277,7 @@ impl MaterialVariant {
             Self::Foliage => MaterialOrientationAxis::Y,
             Self::Glass => MaterialOrientationAxis::Y,
             Self::Ice => MaterialOrientationAxis::Y,
+            Self::Water => MaterialOrientationAxis::Y,
             Self::Ceramic => MaterialOrientationAxis::Y,
             Self::Crystal => MaterialOrientationAxis::Z,
             Self::Soil => MaterialOrientationAxis::Y,
@@ -287,6 +295,7 @@ impl MaterialVariant {
             Self::Glass => 7,
             Self::Soil => 8,
             Self::Foliage => 9,
+            Self::Water => 10,
         }
     }
 
@@ -387,6 +396,22 @@ impl MaterialVariant {
                 100,
                 7,
                 MaterialMatterState::Solid,
+            ),
+            Self::Water => MaterialCommonProperties::new(
+                20,
+                4,
+                32,
+                0,
+                900,
+                860,
+                0,
+                100,
+                120,
+                40,
+                120,
+                0,
+                7,
+                MaterialMatterState::Liquid,
             ),
             Self::Ceramic => MaterialCommonProperties::new(
                 260,

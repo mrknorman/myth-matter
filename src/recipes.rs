@@ -3,8 +3,8 @@ use crate::{
     MaterialOrientationAxis, MaterialRarityContext, MaterialRegolithOrigin,
     MaterialRegolithParameters, MaterialSoilElementBindings, MaterialSoilParameters,
     MaterialStoneGenesis, MaterialStoneLithology, MaterialStoneParameters, MaterialVariant,
-    derive_material_common_properties_for_state, material_derive_stone_lithology,
-    material_regolith_parameters_for_origin,
+    MaterialWaterParameters, derive_material_common_properties_for_state,
+    material_derive_stone_lithology, material_regolith_parameters_for_origin,
 };
 
 pub const TERRAIN_MATERIAL_INPUT_SCHEMA_VERSION: u32 = 1;
@@ -60,6 +60,9 @@ pub enum MaterialRecipeParameters {
     },
     Ice {
         params: MaterialIceParameters,
+    },
+    Water {
+        params: MaterialWaterParameters,
     },
 }
 
@@ -321,6 +324,9 @@ pub fn derive_material_recipe(
             rarity_context,
         ),
         MaterialVariant::Ice => derive_ice_recipe(MaterialIceParameters::default(), rarity_context),
+        MaterialVariant::Water => {
+            derive_water_recipe(MaterialWaterParameters::default(), rarity_context)
+        }
         MaterialVariant::Ceramic => derive_ceramic_recipe(
             soil_params,
             MaterialRegolithOrigin::Residual,
@@ -338,6 +344,7 @@ pub fn derive_ceramic_recipe(
     let viewer_state = MaterialDerivationState {
         selected_variant: MaterialVariant::Ceramic,
         ice_params: MaterialIceParameters::default(),
+        water_params: MaterialWaterParameters::default(),
         selected_stone_genesis: MaterialStoneGenesis::default(),
         stone_params: MaterialStoneParameters::default(),
         regolith_params: material_regolith_parameters_for_origin(regolith_origin),
@@ -409,6 +416,7 @@ fn derive_simple_recipe(
     let viewer_state = MaterialDerivationState {
         selected_variant: variant,
         ice_params: MaterialIceParameters::default(),
+        water_params: MaterialWaterParameters::default(),
         selected_stone_genesis: MaterialStoneGenesis::default(),
         stone_params: MaterialStoneParameters::default(),
         regolith_params: material_regolith_parameters_for_origin(MaterialRegolithOrigin::Residual),
@@ -493,6 +501,7 @@ fn derive_bedrock_recipe(
     let viewer_state = MaterialDerivationState {
         selected_variant: MaterialVariant::Stone,
         ice_params: MaterialIceParameters::default(),
+        water_params: MaterialWaterParameters::default(),
         selected_stone_genesis: genesis,
         stone_params: params,
         regolith_params: material_regolith_parameters_for_origin(
@@ -552,6 +561,7 @@ fn derive_soil_recipe(
     let viewer_state = MaterialDerivationState {
         selected_variant: MaterialVariant::Soil,
         ice_params: MaterialIceParameters::default(),
+        water_params: MaterialWaterParameters::default(),
         selected_stone_genesis: MaterialStoneGenesis::default(),
         stone_params: MaterialStoneParameters::default(),
         regolith_params: regolith
@@ -585,6 +595,7 @@ fn derive_stone_recipe(
     let viewer_state = MaterialDerivationState {
         selected_variant: MaterialVariant::Stone,
         ice_params: MaterialIceParameters::default(),
+        water_params: MaterialWaterParameters::default(),
         selected_stone_genesis: genesis,
         stone_params: params,
         regolith_params: material_regolith_parameters_for_origin(
@@ -615,6 +626,7 @@ fn derive_ice_recipe(
     let viewer_state = MaterialDerivationState {
         selected_variant: MaterialVariant::Ice,
         ice_params: params,
+        water_params: MaterialWaterParameters::default(),
         selected_stone_genesis: MaterialStoneGenesis::default(),
         stone_params: MaterialStoneParameters::default(),
         regolith_params: material_regolith_parameters_for_origin(MaterialRegolithOrigin::Residual),
@@ -632,6 +644,31 @@ fn derive_ice_recipe(
     }
 }
 
+fn derive_water_recipe(
+    params: MaterialWaterParameters,
+    rarity_context: MaterialRarityContext,
+) -> MaterialRecipe {
+    let viewer_state = MaterialDerivationState {
+        selected_variant: MaterialVariant::Water,
+        ice_params: MaterialIceParameters::default(),
+        water_params: params,
+        selected_stone_genesis: MaterialStoneGenesis::default(),
+        stone_params: MaterialStoneParameters::default(),
+        regolith_params: material_regolith_parameters_for_origin(MaterialRegolithOrigin::Residual),
+        soil_params: MaterialSoilParameters::default(),
+        rarity_context,
+    };
+    MaterialRecipe {
+        class: MaterialClass::Elemental,
+        variant: MaterialVariant::Water,
+        orientation: MaterialVariant::Water.orientation_axis(),
+        optical_class: MaterialOpticalClass::ThinTransmissive,
+        representative_color: representative_color_for_water(params),
+        common_properties: derive_material_common_properties_for_state(viewer_state),
+        parameters: MaterialRecipeParameters::Water { params },
+    }
+}
+
 fn optical_class_for_variant(
     variant: MaterialVariant,
     ice_params: MaterialIceParameters,
@@ -639,6 +676,7 @@ fn optical_class_for_variant(
     match variant {
         MaterialVariant::Metal | MaterialVariant::Crystal => MaterialOpticalClass::SpecularOpaque,
         MaterialVariant::Glass => MaterialOpticalClass::ThinTransmissive,
+        MaterialVariant::Water => MaterialOpticalClass::ThinTransmissive,
         MaterialVariant::Ice => {
             let clarity = ice_params.compaction() * (1.0 - ice_params.air_content());
             if clarity >= 0.18 {
@@ -659,10 +697,33 @@ fn representative_color_for_variant(variant: MaterialVariant) -> MaterialReprese
         MaterialVariant::Foliage => MaterialRepresentativeColor::new(0.26, 0.44, 0.16),
         MaterialVariant::Glass => MaterialRepresentativeColor::new(0.72, 0.80, 0.84),
         MaterialVariant::Ice => MaterialRepresentativeColor::new(0.78, 0.88, 0.94),
+        MaterialVariant::Water => {
+            representative_color_for_water(MaterialWaterParameters::default())
+        }
         MaterialVariant::Ceramic => MaterialRepresentativeColor::new(0.70, 0.46, 0.32),
         MaterialVariant::Crystal => MaterialRepresentativeColor::new(0.70, 0.62, 0.82),
         MaterialVariant::Soil => MaterialRepresentativeColor::new(0.42, 0.32, 0.22),
     }
+}
+
+fn representative_color_for_water(params: MaterialWaterParameters) -> MaterialRepresentativeColor {
+    let purity = params.purity();
+    let salinity = params.salinity();
+    let sediment = params.sediment();
+    let organic = params.organic_tint();
+    let aeration = params.aeration();
+    let clear = MaterialRepresentativeColor::new(0.56, 0.80, 0.94);
+    let marine = MaterialRepresentativeColor::new(0.34, 0.66, 0.86);
+    let tannin = MaterialRepresentativeColor::new(0.34, 0.44, 0.22);
+    let silted = MaterialRepresentativeColor::new(0.58, 0.50, 0.28);
+    let aerated = MaterialRepresentativeColor::new(0.76, 0.86, 0.88);
+    let salt_mix = clear.mix(marine, salinity * 0.65);
+    let loaded = salt_mix
+        .mix(tannin, organic * 0.55)
+        .mix(silted, sediment * 0.70);
+    loaded
+        .mix(aerated, aeration * 0.30)
+        .mix(clear, purity * 0.25)
 }
 
 fn representative_color_for_element(element: MaterialElement) -> MaterialRepresentativeColor {
