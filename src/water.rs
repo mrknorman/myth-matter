@@ -150,6 +150,23 @@ impl MaterialWaterParameters {
         }
     }
 
+    /// Snaps every lane onto the frozen 64-step semantic grid via
+    /// [`crate::material_snap_unit_lane`] (MAT-1Q,
+    /// docs/material_presentation_redesign.md section 8). The max path length
+    /// lane snaps in its normalized `[0, 1]` encoding, matching the semantic
+    /// key. Lanes live in the struct's native permille encoding, so each
+    /// snapped lane holds the unique permille representative of its grid
+    /// value: re-quantizing yields the same grid step and snapping again is a
+    /// no-op.
+    pub fn snap_to_semantic_grid(&mut self) {
+        for parameter in MaterialWaterParameter::ALL {
+            self.set_parameter(
+                parameter,
+                crate::material_snap_unit_lane(self.value(parameter)),
+            );
+        }
+    }
+
     pub fn visual_label(self) -> &'static str {
         if self.sediment() >= 0.55 {
             "Sediment-Laden Water"

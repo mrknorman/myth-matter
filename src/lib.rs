@@ -22,7 +22,7 @@ pub use ice::{
 pub use identity::{
     MATERIAL_PARAMETER_QUANTIZATION_STEPS_V1, MATERIAL_SEMANTIC_KEY_PROFILE_V1,
     MaterialContentKeyV1, MaterialSemanticKeyV1, MaterialSemanticParametersV1,
-    material_quantize_unit_lane,
+    material_quantize_unit_lane, material_snap_unit_lane,
 };
 pub use packing::MaterialPackedFields;
 pub use properties::{

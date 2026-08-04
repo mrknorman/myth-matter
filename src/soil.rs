@@ -516,6 +516,29 @@ impl MaterialSoilParameters {
         }
     }
 
+    /// Snaps every continuous lane onto the frozen 64-step semantic grid via
+    /// [`crate::material_snap_unit_lane`] (MAT-1Q,
+    /// docs/material_presentation_redesign.md section 8).
+    ///
+    /// Lanes are assigned directly instead of through `set_parameter`:
+    /// the composition setter renormalizes the other components and the
+    /// modifier setter clamps to the sub-grid `water_capacity()` /
+    /// [`MATERIAL_SOIL_IRON_OXIDE_MAX`] limits, either of which would move an
+    /// already snapped lane off-grid. A snapped modifier may therefore sit up
+    /// to half a grid step above its soft capacity limit; identity and
+    /// presentation read the lanes as-is.
+    pub fn snap_to_semantic_grid(&mut self) {
+        self.sand_pct = crate::material_snap_unit_lane(self.sand_pct);
+        self.silt_pct = crate::material_snap_unit_lane(self.silt_pct);
+        self.clay_pct = crate::material_snap_unit_lane(self.clay_pct);
+        self.gravel_pct = crate::material_snap_unit_lane(self.gravel_pct);
+        self.pebble_pct = crate::material_snap_unit_lane(self.pebble_pct);
+        self.tephra_pct = crate::material_snap_unit_lane(self.tephra_pct);
+        self.organic_pct = crate::material_snap_unit_lane(self.organic_pct);
+        self.water_pct = crate::material_snap_unit_lane(self.water_pct);
+        self.iron_oxide_pct = crate::material_snap_unit_lane(self.iron_oxide_pct);
+    }
+
     pub fn composition_total(self) -> f32 {
         self.composition_array().into_iter().sum()
     }

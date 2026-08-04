@@ -33,7 +33,14 @@ pub const MATERIAL_SEMANTIC_KEY_PROFILE_V1: &str = "myth.material-semantic-key.v
 
 /// Number of quantization steps for every continuous `[0, 1]` parameter lane.
 /// Frozen by [`MATERIAL_SEMANTIC_KEY_PROFILE_V1`].
-pub const MATERIAL_PARAMETER_QUANTIZATION_STEPS_V1: u32 = 64;
+///
+/// Deliberately fine (8-bit lanes) so material transitions read as
+/// continuous while remaining discrete (owner refinement, 2026-08-04).
+/// The initial 64-step draft was redefined to 256 before any artifact,
+/// palette, or persisted identity existed under this profile; the
+/// redefinition is recorded in docs/material_presentation_redesign.md
+/// section 8 (MAT-1Q).
+pub const MATERIAL_PARAMETER_QUANTIZATION_STEPS_V1: u32 = 256;
 
 /// Sealed 32-byte sha256 content key over the canonical encoding of a
 /// [`MaterialSemanticKeyV1`]. Equal keys mean semantically identical
@@ -198,6 +205,20 @@ impl MaterialSemanticKeyV1 {
 pub fn material_quantize_unit_lane(value: f32) -> u8 {
     let step_max = (MATERIAL_PARAMETER_QUANTIZATION_STEPS_V1 - 1) as f32;
     (value.clamp(0.0, 1.0) * step_max).round() as u8
+}
+
+/// Canonical on-grid representative of one `[0, 1]` parameter lane: the
+/// dequantized [`material_quantize_unit_lane`] value.
+///
+/// MAT-1Q (docs/material_presentation_redesign.md section 8) makes canonical
+/// derivation emit lanes already snapped through this function, so the C-1
+/// semantic-key quantization is an assertion, never a transformation:
+/// `material_quantize_unit_lane(material_snap_unit_lane(v)) ==
+/// material_quantize_unit_lane(v)` for every `v`, and snapping an already
+/// snapped value is the identity.
+pub fn material_snap_unit_lane(value: f32) -> f32 {
+    let step_max = (MATERIAL_PARAMETER_QUANTIZATION_STEPS_V1 - 1) as f32;
+    material_quantize_unit_lane(value) as f32 / step_max
 }
 
 /// Canonical field name per soil element binding, aligned with
@@ -603,7 +624,7 @@ mod tests {
         let key = content_key(&stone_recipe_fixture());
         assert_eq!(
             key.to_hex(),
-            "2fbb16298ef220296069f412d23e5621e7a54af2a0e5d2d37f131a47bd46ba4f",
+            "eb4d8b6c08daf7c3adcd151902109e98e7776e0bb10a1a21fa1855fc94d04478",
             "canonical encoding drifted; a change here requires a new profile string"
         );
     }
@@ -612,5 +633,34 @@ mod tests {
     fn content_key_round_trips_through_bytes() {
         let key = content_key(&water_recipe_fixture());
         assert_eq!(MaterialContentKeyV1::from_bytes(*key.as_bytes()), key);
+    }
+
+    /// MAT-1Q: the snap is the canonical on-grid lane representative —
+    /// quantization-preserving, idempotent, and the identity on every grid
+    /// value.
+    #[test]
+    fn snap_unit_lane_is_idempotent_and_preserves_quantization() {
+        for sample in 0..=1000 {
+            let value = sample as f32 / 1000.0;
+            let snapped = material_snap_unit_lane(value);
+            assert_eq!(
+                material_quantize_unit_lane(snapped),
+                material_quantize_unit_lane(value),
+                "snap changed the quantized step of {value}"
+            );
+            assert_eq!(
+                material_snap_unit_lane(snapped),
+                snapped,
+                "snap of {value} is not idempotent"
+            );
+        }
+        assert_eq!(material_snap_unit_lane(-0.5), 0.0);
+        assert_eq!(material_snap_unit_lane(1.5), 1.0);
+
+        let step_max = (MATERIAL_PARAMETER_QUANTIZATION_STEPS_V1 - 1) as f32;
+        for step in 0..MATERIAL_PARAMETER_QUANTIZATION_STEPS_V1 {
+            let grid_value = step as f32 / step_max;
+            assert_eq!(material_snap_unit_lane(grid_value), grid_value);
+        }
     }
 }

@@ -79,6 +79,25 @@ pub enum MaterialRecipeParameters {
     },
 }
 
+impl MaterialRecipeParameters {
+    /// Snaps every continuous parameter lane of whichever variant is present
+    /// onto the frozen 64-step semantic grid of
+    /// [`crate::material_snap_unit_lane`] (MAT-1Q,
+    /// docs/material_presentation_redesign.md section 8). Element bindings,
+    /// classes, and the other discrete fields are untouched. Snapping is
+    /// idempotent; canonical derivation output is already snapped, so an
+    /// extra snap is an assertion, never a transformation.
+    pub fn snap_to_semantic_grid(&mut self) {
+        match self {
+            Self::None => {}
+            Self::Soil { params, .. } => params.snap_to_semantic_grid(),
+            Self::Stone { params, .. } => params.snap_to_semantic_grid(),
+            Self::Ice { params } => params.snap_to_semantic_grid(),
+            Self::Water { params } => params.snap_to_semantic_grid(),
+        }
+    }
+}
+
 #[derive(Clone, Copy, Debug, PartialEq)]
 pub struct MaterialRecipe {
     pub class: MaterialClass,
@@ -315,6 +334,14 @@ pub struct TerrainMaterialColumnRecipe {
     pub bedrock: MaterialRecipe,
 }
 
+/// Derives the canonical recipe for one material variant.
+///
+/// Canonical derivation output is on-grid per MAT-1Q
+/// (docs/material_presentation_redesign.md section 8): every continuous
+/// parameter lane is emitted already snapped to the frozen 64-step grid, and
+/// every derived product (lithology, optical class, representative color,
+/// common properties) is computed from the snapped lanes. Consumers must
+/// never re-quantize differently.
 pub fn derive_material_recipe(
     variant: MaterialVariant,
     soil_params: MaterialSoilParameters,
@@ -349,11 +376,19 @@ pub fn derive_material_recipe(
     }
 }
 
+/// Derives the canonical ceramic recipe from a source soil configuration.
+///
+/// Canonical derivation output is on-grid per MAT-1Q
+/// (docs/material_presentation_redesign.md section 8): every continuous
+/// parameter lane is emitted already snapped to the frozen 64-step grid, and
+/// every derived product is computed from the snapped lanes. Consumers must
+/// never re-quantize differently.
 pub fn derive_ceramic_recipe(
-    soil_params: MaterialSoilParameters,
+    mut soil_params: MaterialSoilParameters,
     regolith_origin: MaterialRegolithOrigin,
     rarity_context: MaterialRarityContext,
 ) -> MaterialRecipe {
+    soil_params.snap_to_semantic_grid();
     let viewer_state = MaterialDerivationState {
         selected_variant: MaterialVariant::Ceramic,
         ice_params: MaterialIceParameters::default(),
@@ -381,6 +416,14 @@ pub fn derive_ceramic_recipe(
     }
 }
 
+/// Derives the canonical per-layer material column for one terrain cell.
+///
+/// Canonical derivation output is on-grid per MAT-1Q
+/// (docs/material_presentation_redesign.md section 8): every continuous
+/// parameter lane of every layer recipe is emitted already snapped to the
+/// frozen 64-step grid, and every derived product (lithology, optical class,
+/// representative color, common properties) is computed from the snapped
+/// lanes. Consumers must never re-quantize differently.
 pub fn derive_terrain_material_column_recipe(
     inputs: TerrainMaterialInputs,
 ) -> TerrainMaterialColumnRecipe {
@@ -406,6 +449,10 @@ pub fn derive_terrain_material_column_recipe(
     }
 }
 
+/// Surface/regolith/bedrock convenience wrapper around
+/// [`derive_terrain_material_column_recipe`]; its canonical output is on-grid
+/// per MAT-1Q exactly as documented there. Consumers must never re-quantize
+/// differently.
 pub fn derive_terrain_material_column_recipe_from_surface(
     surface: TerrainSurfaceInputs,
     regolith: TerrainRegolithInputs,
@@ -510,32 +557,7 @@ fn derive_bedrock_recipe(
     rarity_context: MaterialRarityContext,
 ) -> MaterialRecipe {
     let (genesis, params) = stone_profile_for_bedrock_class(bedrock);
-    let lithology = material_derive_stone_lithology(genesis, params);
-    let viewer_state = MaterialDerivationState {
-        selected_variant: MaterialVariant::Stone,
-        ice_params: MaterialIceParameters::default(),
-        water_params: MaterialWaterParameters::default(),
-        selected_stone_genesis: genesis,
-        stone_params: params,
-        regolith_params: material_regolith_parameters_for_origin(
-            MaterialRegolithOrigin::ShallowBedrock,
-        ),
-        soil_params: MaterialSoilParameters::default(),
-        rarity_context,
-    };
-    MaterialRecipe {
-        class: MaterialClass::Elemental,
-        variant: MaterialVariant::Stone,
-        orientation: MaterialVariant::Stone.orientation_axis(),
-        optical_class: MaterialOpticalClass::Opaque,
-        representative_color: representative_color_for_stone(lithology, params),
-        common_properties: derive_material_common_properties_for_state(viewer_state),
-        parameters: MaterialRecipeParameters::Stone {
-            genesis,
-            params,
-            lithology,
-        },
-    }
+    derive_stone_recipe(genesis, params, rarity_context)
 }
 
 fn derive_cover_recipe(
@@ -566,11 +588,15 @@ fn derive_cover_recipe(
     Some(derive_ice_recipe(params, rarity_context))
 }
 
+/// Emits the canonical soil recipe: lanes snap to the MAT-1Q semantic grid
+/// first, so bindings, color, and common properties derive from the snapped
+/// lanes.
 fn derive_soil_recipe(
-    soil_params: MaterialSoilParameters,
+    mut soil_params: MaterialSoilParameters,
     regolith: TerrainRegolithInputs,
     rarity_context: MaterialRarityContext,
 ) -> MaterialRecipe {
+    soil_params.snap_to_semantic_grid();
     let viewer_state = MaterialDerivationState {
         selected_variant: MaterialVariant::Soil,
         ice_params: MaterialIceParameters::default(),
@@ -599,11 +625,15 @@ fn derive_soil_recipe(
     }
 }
 
+/// Emits the canonical stone recipe: lanes snap to the MAT-1Q semantic grid
+/// first, so lithology, color, and common properties derive from the snapped
+/// lanes.
 fn derive_stone_recipe(
     genesis: MaterialStoneGenesis,
-    params: MaterialStoneParameters,
+    mut params: MaterialStoneParameters,
     rarity_context: MaterialRarityContext,
 ) -> MaterialRecipe {
+    params.snap_to_semantic_grid();
     let lithology = material_derive_stone_lithology(genesis, params);
     let viewer_state = MaterialDerivationState {
         selected_variant: MaterialVariant::Stone,
@@ -632,10 +662,14 @@ fn derive_stone_recipe(
     }
 }
 
+/// Emits the canonical ice recipe: lanes snap to the MAT-1Q semantic grid
+/// first, so optical class, color, and common properties derive from the
+/// snapped lanes.
 fn derive_ice_recipe(
-    params: MaterialIceParameters,
+    mut params: MaterialIceParameters,
     rarity_context: MaterialRarityContext,
 ) -> MaterialRecipe {
+    params.snap_to_semantic_grid();
     let viewer_state = MaterialDerivationState {
         selected_variant: MaterialVariant::Ice,
         ice_params: params,
@@ -657,10 +691,13 @@ fn derive_ice_recipe(
     }
 }
 
+/// Emits the canonical water recipe: lanes snap to the MAT-1Q semantic grid
+/// first, so color and common properties derive from the snapped lanes.
 fn derive_water_recipe(
-    params: MaterialWaterParameters,
+    mut params: MaterialWaterParameters,
     rarity_context: MaterialRarityContext,
 ) -> MaterialRecipe {
+    params.snap_to_semantic_grid();
     let viewer_state = MaterialDerivationState {
         selected_variant: MaterialVariant::Water,
         ice_params: MaterialIceParameters::default(),
@@ -1176,9 +1213,136 @@ fn stone_profile_for_bedrock_class(
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::{
+        MaterialSemanticKeyV1, MaterialSoilParameter, MaterialStoneParameter,
+        material_snap_unit_lane,
+    };
 
     fn assert_nearly_eq(lhs: f32, rhs: f32) {
         assert!((lhs - rhs).abs() <= 1.0e-6, "lhs={lhs}, rhs={rhs}");
+    }
+
+    /// MAT-1Q: every continuous lane of a canonical derivation output is
+    /// exactly its own snap (for the f32-stored soil and stone lanes), and
+    /// snapping the parameters again is a struct-level no-op for every
+    /// variant (ice and water lanes live in their native permille encoding,
+    /// where the fixed point is the on-grid statement).
+    fn assert_parameters_on_grid(parameters: &MaterialRecipeParameters) {
+        match parameters {
+            MaterialRecipeParameters::None => {}
+            MaterialRecipeParameters::Soil { params, .. } => {
+                for parameter in MaterialSoilParameter::COMPOSITION
+                    .into_iter()
+                    .chain(MaterialSoilParameter::MODIFIERS)
+                {
+                    let lane = params.value(parameter);
+                    assert_eq!(lane, material_snap_unit_lane(lane), "soil lane off-grid");
+                }
+            }
+            MaterialRecipeParameters::Stone { params, .. } => {
+                for parameter in MaterialStoneParameter::COMMON
+                    .into_iter()
+                    .chain(MaterialStoneParameter::SPECIFIC)
+                {
+                    let lane = params.value(parameter);
+                    assert_eq!(lane, material_snap_unit_lane(lane), "stone lane off-grid");
+                }
+            }
+            MaterialRecipeParameters::Ice { .. } | MaterialRecipeParameters::Water { .. } => {}
+        }
+        let mut snapped = *parameters;
+        snapped.snap_to_semantic_grid();
+        assert_eq!(&snapped, parameters, "snapping a derived output moved it");
+    }
+
+    /// MAT-1Q assertion-not-transformation: an extra explicit snap changes
+    /// neither the parameters nor the semantic key of a derived recipe.
+    fn assert_recipe_on_grid(recipe: &MaterialRecipe) {
+        assert_parameters_on_grid(&recipe.parameters);
+        let mut resnapped = *recipe;
+        resnapped.parameters.snap_to_semantic_grid();
+        assert_eq!(
+            MaterialSemanticKeyV1::from_recipe(&resnapped).content_key(),
+            MaterialSemanticKeyV1::from_recipe(recipe).content_key(),
+        );
+    }
+
+    fn derived_recipe_sample() -> Vec<MaterialRecipe> {
+        let mut recipes = Vec::new();
+
+        let default_column =
+            derive_terrain_material_column_recipe(TerrainMaterialInputs::default());
+        recipes.extend([
+            default_column.surface,
+            default_column.subsurface,
+            default_column.bedrock,
+        ]);
+
+        let varied_column = derive_terrain_material_column_recipe(TerrainMaterialInputs {
+            surface: TerrainSurfaceInputs {
+                class: TerrainSurfaceClass::Peat,
+                moisture: 0.437,
+                organic_fraction: 0.613,
+                carbonate_fraction: 0.091,
+                tephra_fraction: 0.037,
+                iron_oxide_fraction: 0.113,
+            },
+            bedrock: TerrainBedrockInputs {
+                class: TerrainBedrockClass::Sandstone,
+                vein_content: Some(0.911),
+                fracture_density: 0.773,
+                weathering: 0.181,
+                oxide_staining: 0.629,
+                primary: Some(0.123),
+                ..TerrainBedrockInputs::default()
+            },
+            cover: TerrainCoverInputs {
+                class: TerrainCoverClass::Snow,
+                compaction: 0.271,
+                air_content: 0.833,
+                impurity: 0.057,
+                ..TerrainCoverInputs::default()
+            },
+            ..TerrainMaterialInputs::default()
+        });
+        recipes.push(varied_column.cover.expect("snow cover recipe"));
+        recipes.extend([
+            varied_column.surface,
+            varied_column.subsurface,
+            varied_column.bedrock,
+        ]);
+
+        for variant in [
+            MaterialVariant::Soil,
+            MaterialVariant::Stone,
+            MaterialVariant::Ice,
+            MaterialVariant::Water,
+            MaterialVariant::Ceramic,
+        ] {
+            recipes.push(derive_material_recipe(
+                variant,
+                MaterialSoilParameters {
+                    sand_pct: 0.313,
+                    silt_pct: 0.207,
+                    clay_pct: 0.191,
+                    gravel_pct: 0.093,
+                    pebble_pct: 0.087,
+                    tephra_pct: 0.041,
+                    organic_pct: 0.068,
+                    water_pct: 0.111,
+                    iron_oxide_pct: 0.047,
+                },
+                MaterialRarityContext::default(),
+            ));
+        }
+        recipes
+    }
+
+    #[test]
+    fn mat1q_derived_recipes_are_on_grid_and_resnap_is_assertion() {
+        for recipe in derived_recipe_sample() {
+            assert_recipe_on_grid(&recipe);
+        }
     }
 
     #[test]
@@ -1269,14 +1433,16 @@ mod tests {
                 genesis, params, ..
             } => {
                 assert_eq!(genesis, MaterialStoneGenesis::Igneous);
-                assert_nearly_eq(params.vein_content, 0.91);
-                assert_nearly_eq(params.fracture_density, 0.77);
-                assert_nearly_eq(params.weathering, 0.18);
-                assert_nearly_eq(params.oxide_staining, 0.63);
-                assert_nearly_eq(params.primary, 0.12);
-                assert_nearly_eq(params.secondary, 0.34);
-                assert_nearly_eq(params.tertiary, 0.56);
-                assert_nearly_eq(params.quaternary, 0.78);
+                // MAT-1Q: canonical derivation emits each override snapped
+                // onto the frozen 64-step semantic grid.
+                assert_nearly_eq(params.vein_content, material_snap_unit_lane(0.91));
+                assert_nearly_eq(params.fracture_density, material_snap_unit_lane(0.77));
+                assert_nearly_eq(params.weathering, material_snap_unit_lane(0.18));
+                assert_nearly_eq(params.oxide_staining, material_snap_unit_lane(0.63));
+                assert_nearly_eq(params.primary, material_snap_unit_lane(0.12));
+                assert_nearly_eq(params.secondary, material_snap_unit_lane(0.34));
+                assert_nearly_eq(params.tertiary, material_snap_unit_lane(0.56));
+                assert_nearly_eq(params.quaternary, material_snap_unit_lane(0.78));
             }
             _ => panic!("expected stone recipe"),
         }

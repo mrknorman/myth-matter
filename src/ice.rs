@@ -151,6 +151,22 @@ impl MaterialIceParameters {
         }
     }
 
+    /// Snaps every lane onto the frozen 64-step semantic grid via
+    /// [`crate::material_snap_unit_lane`] (MAT-1Q,
+    /// docs/material_presentation_redesign.md section 8). Lanes live in the
+    /// struct's native permille encoding, so each snapped lane holds the
+    /// unique permille representative of its grid value: re-quantizing yields
+    /// the same grid step and snapping again is a no-op. The discrete
+    /// `impurity_element` binding is untouched.
+    pub fn snap_to_semantic_grid(&mut self) {
+        for parameter in MaterialIceParameter::ALL {
+            self.set_parameter(
+                parameter,
+                crate::material_snap_unit_lane(self.value(parameter)),
+            );
+        }
+    }
+
     pub const fn compaction(self) -> f32 {
         Self::decode_unit_interval(self.compaction_pct)
     }

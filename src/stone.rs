@@ -147,6 +147,23 @@ impl MaterialStoneParameters {
             MaterialStoneParameter::Quaternary => self.quaternary = clamped,
         }
     }
+
+    /// Snaps every lane onto the frozen 64-step semantic grid via
+    /// [`crate::material_snap_unit_lane`] (MAT-1Q,
+    /// docs/material_presentation_redesign.md section 8). `set_parameter`'s
+    /// `[0, 1]` clamp is a no-op on snapped values, so snapping is
+    /// idempotent and every lane ends exactly on-grid.
+    pub fn snap_to_semantic_grid(&mut self) {
+        for parameter in MaterialStoneParameter::COMMON
+            .into_iter()
+            .chain(MaterialStoneParameter::SPECIFIC)
+        {
+            self.set_parameter(
+                parameter,
+                crate::material_snap_unit_lane(self.value(parameter)),
+            );
+        }
+    }
 }
 
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq)]
