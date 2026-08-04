@@ -21,9 +21,8 @@
 use sha2::{Digest, Sha256};
 
 use crate::{
-    MaterialClass, MaterialIceParameter, MaterialOpticalClass, MaterialOrientationAxis,
-    MaterialRecipe, MaterialRecipeParameters, MaterialSoilParameter, MaterialStoneParameter,
-    MaterialVariant, MaterialWaterParameter,
+    MaterialIceParameter,
+    MaterialRecipe, MaterialRecipeParameters, MaterialSoilParameter, MaterialStoneParameter, MaterialWaterParameter,
 };
 
 /// Versioned profile of the semantic-key canonical encoding and its
