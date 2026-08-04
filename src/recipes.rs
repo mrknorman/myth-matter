@@ -17,6 +17,19 @@ pub enum MaterialOpticalClass {
     ThinTransmissive,
 }
 
+impl MaterialOpticalClass {
+    /// Stable identity id used by versioned semantic keys. Values are frozen
+    /// and never derived from declaration order; renumbering is a breaking
+    /// identity change.
+    pub const fn encode_id(self) -> u32 {
+        match self {
+            Self::Opaque => 0,
+            Self::SpecularOpaque => 1,
+            Self::ThinTransmissive => 2,
+        }
+    }
+}
+
 #[derive(Clone, Copy, Debug, PartialEq)]
 pub struct MaterialRepresentativeColor {
     pub rgb: [f32; 3],

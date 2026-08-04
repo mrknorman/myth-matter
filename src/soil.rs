@@ -54,6 +54,26 @@ impl MaterialRegolithOrigin {
             Self::ShallowBedrock => 11,
         }
     }
+
+    /// Stable identity id used by versioned semantic keys. Values are frozen
+    /// independently of `shader_id` so shader retuning can never silently
+    /// change material identity.
+    pub const fn encode_id(self) -> u32 {
+        match self {
+            Self::Residual => 0,
+            Self::Alluvial => 1,
+            Self::Colluvial => 2,
+            Self::Aeolian => 3,
+            Self::Lacustrine => 4,
+            Self::MarineShelf => 5,
+            Self::MarinePelagic => 6,
+            Self::EstuarineDeltaic => 7,
+            Self::GlacialTill => 8,
+            Self::Tephric => 9,
+            Self::OrganicPeat => 10,
+            Self::ShallowBedrock => 11,
+        }
+    }
 }
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]

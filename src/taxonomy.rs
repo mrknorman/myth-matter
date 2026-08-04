@@ -29,6 +29,17 @@ impl MaterialOrientationAxis {
             Self::Z => 2,
         }
     }
+
+    /// Stable identity id used by versioned semantic keys. Values are frozen
+    /// independently of `shader_id` so shader retuning can never silently
+    /// change material identity.
+    pub const fn encode_id(self) -> u32 {
+        match self {
+            Self::X => 0,
+            Self::Y => 1,
+            Self::Z => 2,
+        }
+    }
 }
 
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq)]
@@ -96,6 +107,16 @@ impl MaterialClass {
             Self::Mixture => "Mixture",
         }
     }
+
+    /// Stable identity id used by versioned semantic keys. Values are frozen
+    /// and never derived from declaration order; renumbering is a breaking
+    /// identity change.
+    pub const fn encode_id(self) -> u32 {
+        match self {
+            Self::Elemental => 0,
+            Self::Mixture => 1,
+        }
+    }
 }
 
 #[allow(dead_code)]
@@ -149,6 +170,26 @@ impl MaterialElement {
     }
 
     pub const fn shader_id(self) -> u32 {
+        match self {
+            Self::Stone => 0,
+            Self::Metal => 1,
+            Self::Wood => 2,
+            Self::Snow => 3,
+            Self::Ice => 4,
+            Self::Ceramic => 5,
+            Self::Crystal => 6,
+            Self::Glass => 7,
+            Self::Carbonate => 8,
+            Self::Tephra => 9,
+            Self::Humus => 10,
+            Self::IronOxide => 11,
+        }
+    }
+
+    /// Stable identity id used by versioned semantic keys. Values are frozen
+    /// independently of `shader_id` so shader retuning can never silently
+    /// change material identity.
+    pub const fn encode_id(self) -> u32 {
         match self {
             Self::Stone => 0,
             Self::Metal => 1,
@@ -221,6 +262,24 @@ impl MaterialVariant {
             Self::Ceramic => "Ceramic",
             Self::Crystal => "Crystal",
             Self::Soil => "Soil",
+        }
+    }
+
+    /// Stable identity id used by versioned semantic keys. Values are frozen
+    /// independently of `shader_family_id` and never derived from declaration
+    /// order; renumbering is a breaking identity change.
+    pub const fn encode_id(self) -> u32 {
+        match self {
+            Self::Stone => 0,
+            Self::Metal => 1,
+            Self::Wood => 2,
+            Self::Foliage => 3,
+            Self::Glass => 4,
+            Self::Ice => 5,
+            Self::Water => 6,
+            Self::Ceramic => 7,
+            Self::Crystal => 8,
+            Self::Soil => 9,
         }
     }
 

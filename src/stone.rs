@@ -24,6 +24,17 @@ impl MaterialStoneGenesis {
             Self::Metamorphic => 2,
         }
     }
+
+    /// Stable identity id used by versioned semantic keys. Values are frozen
+    /// independently of `shader_id` so shader retuning can never silently
+    /// change material identity.
+    pub const fn encode_id(self) -> u32 {
+        match self {
+            Self::Igneous => 0,
+            Self::Sedimentary => 1,
+            Self::Metamorphic => 2,
+        }
+    }
 }
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
@@ -172,6 +183,25 @@ impl MaterialStoneLithology {
     }
 
     pub const fn shader_id(self) -> u32 {
+        match self {
+            Self::Crystalline => 0,
+            Self::Metamorphic => 1,
+            Self::BasalticVolcanic => 2,
+            Self::Volcaniclastic => 3,
+            Self::OceanicBasalt => 4,
+            Self::PassiveMarginSediment => 5,
+            Self::CarbonatePlatform => 6,
+            Self::Sandstone => 7,
+            Self::MudstoneShale => 8,
+            Self::Carbonate => 9,
+            Self::BasinFill => 10,
+        }
+    }
+
+    /// Stable identity id used by versioned semantic keys. Values are frozen
+    /// independently of `shader_id` so shader retuning can never silently
+    /// change material identity.
+    pub const fn encode_id(self) -> u32 {
         match self {
             Self::Crystalline => 0,
             Self::Metamorphic => 1,

@@ -1,5 +1,6 @@
 pub mod derivation;
 pub mod ice;
+pub mod identity;
 pub mod packing;
 pub mod properties;
 mod rarity;
@@ -17,6 +18,11 @@ pub use derivation::{
 };
 pub use ice::{
     MaterialIceForm, MaterialIceParameter, MaterialIceParameters, material_ice_anchor_weights,
+};
+pub use identity::{
+    MATERIAL_PARAMETER_QUANTIZATION_STEPS_V1, MATERIAL_SEMANTIC_KEY_PROFILE_V1,
+    MaterialContentKeyV1, MaterialSemanticKeyV1, MaterialSemanticParametersV1,
+    material_quantize_unit_lane,
 };
 pub use packing::MaterialPackedFields;
 pub use properties::{
