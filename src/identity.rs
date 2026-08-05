@@ -385,10 +385,11 @@ impl CanonicalEncoder {
 mod tests {
     use super::*;
     use crate::{
-        MaterialCommonProperties, MaterialElement, MaterialIceParameters, MaterialMatterState,
-        MaterialRegolithOrigin, MaterialRepresentativeColor, MaterialSoilElementBindings,
-        MaterialSoilParameters, MaterialStoneGenesis, MaterialStoneLithology,
-        MaterialStoneParameters, MaterialWaterParameters, material_derive_stone_lithology,
+        MaterialClass, MaterialCommonProperties, MaterialElement, MaterialIceParameters,
+        MaterialMatterState, MaterialOpticalClass, MaterialOrientationAxis, MaterialRegolithOrigin,
+        MaterialRepresentativeColor, MaterialSoilElementBindings, MaterialSoilParameters,
+        MaterialStoneGenesis, MaterialStoneLithology, MaterialStoneParameters, MaterialVariant,
+        MaterialWaterParameters, material_derive_stone_lithology,
     };
 
     fn common_properties_fixture() -> MaterialCommonProperties {
