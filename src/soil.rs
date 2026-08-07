@@ -21,6 +21,27 @@ pub enum MaterialRegolithOrigin {
 }
 
 impl MaterialRegolithOrigin {
+    pub const ALL: [Self; 12] = [
+        Self::Residual,
+        Self::Alluvial,
+        Self::Colluvial,
+        Self::Aeolian,
+        Self::Lacustrine,
+        Self::MarineShelf,
+        Self::MarinePelagic,
+        Self::EstuarineDeltaic,
+        Self::GlacialTill,
+        Self::Tephric,
+        Self::OrganicPeat,
+        Self::ShallowBedrock,
+    ];
+
+    /// Inverse of [`Self::encode_id`] for persisted identity (C-070 tables
+    /// and any future encoded-id reader). Unknown ids are refused, never
+    /// defaulted — an unknown identity must fail closed.
+    pub fn from_encode_id(id: u32) -> Option<Self> {
+        Self::ALL.into_iter().find(|value| value.encode_id() == id)
+    }
     pub const fn label(self) -> &'static str {
         match self {
             Self::Residual => "Residual",

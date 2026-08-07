@@ -44,7 +44,9 @@ pub const MATERIAL_PARAMETER_QUANTIZATION_STEPS_V1: u32 = 256;
 /// Sealed 32-byte sha256 content key over the canonical encoding of a
 /// [`MaterialSemanticKeyV1`]. Equal keys mean semantically identical
 /// materials under the current profile.
-#[derive(Clone, Copy, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
+#[derive(
+    Clone, Copy, Debug, Eq, Hash, Ord, PartialEq, PartialOrd, serde::Deserialize, serde::Serialize,
+)]
 pub struct MaterialContentKeyV1([u8; 32]);
 
 impl MaterialContentKeyV1 {
@@ -73,7 +75,7 @@ impl MaterialContentKeyV1 {
 /// Lane order is frozen to the accessor enumeration order of the source
 /// parameter enums (`COMPOSITION` then `MODIFIERS` for soil, `COMMON` then
 /// `SPECIFIC` for stone, `ALL` for ice and water).
-#[derive(Clone, Copy, Debug, Eq, Hash, PartialEq)]
+#[derive(Clone, Copy, Debug, Eq, Hash, PartialEq, serde::Deserialize, serde::Serialize)]
 pub enum MaterialSemanticParametersV1 {
     None,
     Soil {
@@ -122,7 +124,7 @@ impl MaterialSemanticParametersV1 {
 /// parameter lanes. Two recipes with the same semantic key are the same
 /// material for palette and presentation purposes; representative color and
 /// derived common properties never contribute.
-#[derive(Clone, Copy, Debug, Eq, Hash, PartialEq)]
+#[derive(Clone, Copy, Debug, Eq, Hash, PartialEq, serde::Deserialize, serde::Serialize)]
 pub struct MaterialSemanticKeyV1 {
     pub class_id: u32,
     pub variant_id: u32,
@@ -662,5 +664,43 @@ mod tests {
             let grid_value = step as f32 / step_max;
             assert_eq!(material_snap_unit_lane(grid_value), grid_value);
         }
+    }
+}
+
+#[cfg(test)]
+mod encode_id_inverse_tests {
+    use crate::{MaterialElement, MaterialRegolithOrigin, MaterialStoneGenesis,
+        MaterialStoneLithology};
+
+    /// **THE DECODE LAW.** Every identity enum's `from_encode_id` is the
+    /// total inverse of its `encode_id` over the full variant table, and
+    /// an unknown id is refused — never defaulted.
+    #[test]
+    fn from_encode_id_is_the_total_inverse_and_refuses_unknowns() {
+        for value in MaterialElement::ALL {
+            assert_eq!(MaterialElement::from_encode_id(value.encode_id()), Some(value));
+        }
+        for value in MaterialRegolithOrigin::ALL {
+            assert_eq!(
+                MaterialRegolithOrigin::from_encode_id(value.encode_id()),
+                Some(value)
+            );
+        }
+        for value in MaterialStoneGenesis::ALL {
+            assert_eq!(
+                MaterialStoneGenesis::from_encode_id(value.encode_id()),
+                Some(value)
+            );
+        }
+        for value in MaterialStoneLithology::ALL {
+            assert_eq!(
+                MaterialStoneLithology::from_encode_id(value.encode_id()),
+                Some(value)
+            );
+        }
+        assert_eq!(MaterialElement::from_encode_id(9_999), None);
+        assert_eq!(MaterialRegolithOrigin::from_encode_id(9_999), None);
+        assert_eq!(MaterialStoneGenesis::from_encode_id(9_999), None);
+        assert_eq!(MaterialStoneLithology::from_encode_id(9_999), None);
     }
 }

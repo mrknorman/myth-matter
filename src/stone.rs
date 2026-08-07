@@ -9,6 +9,13 @@ pub enum MaterialStoneGenesis {
 impl MaterialStoneGenesis {
     pub const ALL: [Self; 3] = [Self::Igneous, Self::Sedimentary, Self::Metamorphic];
 
+    /// Inverse of [`Self::encode_id`] for persisted identity (C-070 tables
+    /// and any future encoded-id reader). Unknown ids are refused, never
+    /// defaulted — an unknown identity must fail closed.
+    pub fn from_encode_id(id: u32) -> Option<Self> {
+        Self::ALL.into_iter().find(|value| value.encode_id() == id)
+    }
+
     pub const fn label(self) -> &'static str {
         match self {
             Self::Igneous => "Igneous",
@@ -183,6 +190,26 @@ pub enum MaterialStoneLithology {
 }
 
 impl MaterialStoneLithology {
+    pub const ALL: [Self; 11] = [
+        Self::Crystalline,
+        Self::Metamorphic,
+        Self::BasalticVolcanic,
+        Self::Volcaniclastic,
+        Self::OceanicBasalt,
+        Self::PassiveMarginSediment,
+        Self::CarbonatePlatform,
+        Self::Sandstone,
+        Self::MudstoneShale,
+        Self::Carbonate,
+        Self::BasinFill,
+    ];
+
+    /// Inverse of [`Self::encode_id`] for persisted identity (C-070 tables
+    /// and any future encoded-id reader). Unknown ids are refused, never
+    /// defaulted — an unknown identity must fail closed.
+    pub fn from_encode_id(id: u32) -> Option<Self> {
+        Self::ALL.into_iter().find(|value| value.encode_id() == id)
+    }
     pub const fn label(self) -> &'static str {
         match self {
             Self::Crystalline => "Crystalline",
