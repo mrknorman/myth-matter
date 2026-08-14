@@ -669,8 +669,9 @@ mod tests {
 
 #[cfg(test)]
 mod encode_id_inverse_tests {
-    use crate::{MaterialElement, MaterialRegolithOrigin, MaterialStoneGenesis,
-        MaterialStoneLithology};
+    use crate::{
+        MaterialElement, MaterialRegolithOrigin, MaterialStoneGenesis, MaterialStoneLithology,
+    };
 
     /// **THE DECODE LAW.** Every identity enum's `from_encode_id` is the
     /// total inverse of its `encode_id` over the full variant table, and
@@ -678,7 +679,10 @@ mod encode_id_inverse_tests {
     #[test]
     fn from_encode_id_is_the_total_inverse_and_refuses_unknowns() {
         for value in MaterialElement::ALL {
-            assert_eq!(MaterialElement::from_encode_id(value.encode_id()), Some(value));
+            assert_eq!(
+                MaterialElement::from_encode_id(value.encode_id()),
+                Some(value)
+            );
         }
         for value in MaterialRegolithOrigin::ALL {
             assert_eq!(
