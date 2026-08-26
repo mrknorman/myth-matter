@@ -9,7 +9,7 @@ pub enum MaterialStoneGenesis {
 impl MaterialStoneGenesis {
     pub const ALL: [Self; 3] = [Self::Igneous, Self::Sedimentary, Self::Metamorphic];
 
-    /// Inverse of [`Self::encode_id`] for persisted identity (C-070 tables
+    /// Inverse of [`Self::encode_id`] for persisted material identity tables
     /// and any future encoded-id reader). Unknown ids are refused, never
     /// defaulted — an unknown identity must fail closed.
     pub fn from_encode_id(id: u32) -> Option<Self> {
@@ -204,7 +204,7 @@ impl MaterialStoneLithology {
         Self::BasinFill,
     ];
 
-    /// Inverse of [`Self::encode_id`] for persisted identity (C-070 tables
+    /// Inverse of [`Self::encode_id`] for persisted material identity tables
     /// and any future encoded-id reader). Unknown ids are refused, never
     /// defaulted — an unknown identity must fail closed.
     pub fn from_encode_id(id: u32) -> Option<Self> {

@@ -36,7 +36,7 @@ impl MaterialRegolithOrigin {
         Self::ShallowBedrock,
     ];
 
-    /// Inverse of [`Self::encode_id`] for persisted identity (C-070 tables
+    /// Inverse of [`Self::encode_id`] for persisted material identity tables
     /// and any future encoded-id reader). Unknown ids are refused, never
     /// defaulted — an unknown identity must fail closed.
     pub fn from_encode_id(id: u32) -> Option<Self> {
