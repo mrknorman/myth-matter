@@ -9,7 +9,7 @@
 //! never identity inputs.
 //!
 //! Deterministic per-coordinate variation must never enter this key
-//! (docs/material_presentation_redesign.md section 3.1): the same recipe at
+//! (docs/designs/materials/material_presentation_redesign.md section 3.1): the same recipe at
 //! two world positions is one material, otherwise ordinary noise would create
 //! one material per face and defeat greedy meshing and palette reuse.
 //!
@@ -37,7 +37,7 @@ pub const MATERIAL_SEMANTIC_KEY_PROFILE_V1: &str = "myth.material-semantic-key.v
 /// continuous while remaining discrete (owner refinement, 2026-08-04).
 /// The initial 64-step draft was redefined to 256 before any artifact,
 /// palette, or persisted identity existed under this profile; the
-/// redefinition is recorded in docs/material_presentation_redesign.md
+/// redefinition is recorded in docs/designs/materials/material_presentation_redesign.md
 /// section 8 (MAT-1Q).
 pub const MATERIAL_PARAMETER_QUANTIZATION_STEPS_V1: u32 = 256;
 
@@ -211,7 +211,7 @@ pub fn material_quantize_unit_lane(value: f32) -> u8 {
 /// Canonical on-grid representative of one `[0, 1]` parameter lane: the
 /// dequantized [`material_quantize_unit_lane`] value.
 ///
-/// MAT-1Q (docs/material_presentation_redesign.md section 8) makes canonical
+/// MAT-1Q (docs/designs/materials/material_presentation_redesign.md section 8) makes canonical
 /// derivation emit lanes already snapped through this function, so the C-1
 /// semantic-key quantization is an assertion, never a transformation:
 /// `material_quantize_unit_lane(material_snap_unit_lane(v)) ==

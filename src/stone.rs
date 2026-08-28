@@ -157,7 +157,7 @@ impl MaterialStoneParameters {
 
     /// Snaps every lane onto the frozen 64-step semantic grid via
     /// [`crate::material_snap_unit_lane`] (MAT-1Q,
-    /// docs/material_presentation_redesign.md section 8). `set_parameter`'s
+    /// docs/designs/materials/material_presentation_redesign.md section 8). `set_parameter`'s
     /// `[0, 1]` clamp is a no-op on snapped values, so snapping is
     /// idempotent and every lane ends exactly on-grid.
     pub fn snap_to_semantic_grid(&mut self) {

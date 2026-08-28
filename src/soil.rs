@@ -539,7 +539,7 @@ impl MaterialSoilParameters {
 
     /// Snaps every continuous lane onto the frozen 64-step semantic grid via
     /// [`crate::material_snap_unit_lane`] (MAT-1Q,
-    /// docs/material_presentation_redesign.md section 8).
+    /// docs/designs/materials/material_presentation_redesign.md section 8).
     ///
     /// Lanes are assigned directly instead of through `set_parameter`:
     /// the composition setter renormalizes the other components and the

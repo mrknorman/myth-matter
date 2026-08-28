@@ -83,7 +83,7 @@ impl MaterialRecipeParameters {
     /// Snaps every continuous parameter lane of whichever variant is present
     /// onto the frozen 64-step semantic grid of
     /// [`crate::material_snap_unit_lane`] (MAT-1Q,
-    /// docs/material_presentation_redesign.md section 8). Element bindings,
+    /// docs/designs/materials/material_presentation_redesign.md section 8). Element bindings,
     /// classes, and the other discrete fields are untouched. Snapping is
     /// idempotent; canonical derivation output is already snapped, so an
     /// extra snap is an assertion, never a transformation.
@@ -337,7 +337,7 @@ pub struct TerrainMaterialColumnRecipe {
 /// Derives the canonical recipe for one material variant.
 ///
 /// Canonical derivation output is on-grid per MAT-1Q
-/// (docs/material_presentation_redesign.md section 8): every continuous
+/// (docs/designs/materials/material_presentation_redesign.md section 8): every continuous
 /// parameter lane is emitted already snapped to the frozen 64-step grid, and
 /// every derived product (lithology, optical class, representative color,
 /// common properties) is computed from the snapped lanes. Consumers must
@@ -379,7 +379,7 @@ pub fn derive_material_recipe(
 /// Derives the canonical ceramic recipe from a source soil configuration.
 ///
 /// Canonical derivation output is on-grid per MAT-1Q
-/// (docs/material_presentation_redesign.md section 8): every continuous
+/// (docs/designs/materials/material_presentation_redesign.md section 8): every continuous
 /// parameter lane is emitted already snapped to the frozen 64-step grid, and
 /// every derived product is computed from the snapped lanes. Consumers must
 /// never re-quantize differently.
@@ -419,7 +419,7 @@ pub fn derive_ceramic_recipe(
 /// Derives the canonical per-layer material column for one terrain cell.
 ///
 /// Canonical derivation output is on-grid per MAT-1Q
-/// (docs/material_presentation_redesign.md section 8): every continuous
+/// (docs/designs/materials/material_presentation_redesign.md section 8): every continuous
 /// parameter lane of every layer recipe is emitted already snapped to the
 /// frozen 64-step grid, and every derived product (lithology, optical class,
 /// representative color, common properties) is computed from the snapped
