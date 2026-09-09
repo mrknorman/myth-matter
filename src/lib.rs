@@ -1,3 +1,4 @@
+pub mod binding_state;
 pub mod derivation;
 pub mod ice;
 pub mod identity;
@@ -11,6 +12,7 @@ pub mod stone;
 pub mod taxonomy;
 pub mod water;
 
+pub use binding_state::{MaterialBindingStateRefusalV1, MaterialBindingStateV1};
 pub use derivation::{
     derive_material_common_properties, derive_material_common_properties_for_state,
     derive_soil_base_common_properties, derive_soil_base_common_properties_with_origin,
