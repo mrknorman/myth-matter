@@ -76,6 +76,7 @@ impl MaterialContentKeyV1 {
 /// parameter enums (`COMPOSITION` then `MODIFIERS` for soil, `COMMON` then
 /// `SPECIFIC` for stone, `ALL` for ice and water).
 #[derive(Clone, Copy, Debug, Eq, Hash, PartialEq, serde::Deserialize, serde::Serialize)]
+#[serde(deny_unknown_fields)]
 pub enum MaterialSemanticParametersV1 {
     None,
     Soil {
@@ -125,6 +126,7 @@ impl MaterialSemanticParametersV1 {
 /// material for palette and presentation purposes; representative color and
 /// derived common properties never contribute.
 #[derive(Clone, Copy, Debug, Eq, Hash, PartialEq, serde::Deserialize, serde::Serialize)]
+#[serde(deny_unknown_fields)]
 pub struct MaterialSemanticKeyV1 {
     pub class_id: u32,
     pub variant_id: u32,
